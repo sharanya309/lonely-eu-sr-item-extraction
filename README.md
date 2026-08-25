@@ -1,18 +1,8 @@
 # LONELY-EU — Systematic Review Item Extraction
 
-*Systematic review of loneliness & social-connection measurement across the EU/UK —
-technical report and the extraction/cleaning pipeline (code).*
+*Systematic review of social connection and loneliness instruments — technical report and the extraction/cleaning pipeline (code).*
 
-This repository documents the **item-extraction** work carried out under WP3_1A of
-LONELY-EU, a Horizon Europe project strengthening the evidence base on loneliness across
-Europe. Following a pre-registered search protocol, we screened roughly 80,000 records in
-ten languages and extracted measurement instruments from the included full-text articles
-using a reproducible, dual-model AI pipeline with source verification and human validation.
-For every instrument we captured item wording, response formats, subscales, use of validated
-instruments, and study/population metadata, then cleaned, de-duplicated, and organised the
-results into a single searchable item database — supporting data discovery, systematic
-assessment of measurement heterogeneity and cross-dataset comparability, and identification
-of substantive and geographic gaps in loneliness measurement.
+This repository documents the **item-extraction** work carried out under the systematic review of social connection inventories project of LONELY-EU, a Horizon Europe project. Following a pre-registered search protocol, we screened roughly 80,000 records in ten languages and extracted measurement instruments from the included full-text articles using a reproducible, dual-model AI pipeline with source verification and human validation. For every instrument we captured item wording, response formats, subscales, use of validated instruments, and study/population metadata, then cleaned, de-duplicated, and organised the results into a single searchable item database — supporting data discovery, systematic assessment of measurement heterogeneity and cross-dataset comparability, and identification of substantive and geographic gaps in loneliness measurement.
 
 **Read [`TECHNICAL_REPORT.md`](TECHNICAL_REPORT.md) first** — it is the authoritative
 write-up with all defensible numbers.
@@ -26,12 +16,7 @@ Part of the systematic review of social connection inventories (Paris et al., re
 report), which will inform the EU Social Isolation & Loneliness (SIL) Index.
 
 ## Data availability
-This repository ships the **code and documentation only** — the extracted questionnaire
-items and intermediate/output data files are **not** included. The full, searchable item
-database is publicly available through the interactive explorer
-(https://absl.shinyapps.io/lonely-eu-explorer/), and the methodology and headline numbers
-are in [`TECHNICAL_REPORT.md`](TECHNICAL_REPORT.md) and on OSF. Running the pipelines below
-regenerates the outputs from source PDFs (not distributed here).
+This repository ships the **code and documentation only** — the extracted questionnaire items and intermediate/output data files are **not** included. The full, searchable item database is publicly available through the interactive explorer (https://absl.shinyapps.io/lonely-eu-explorer/), and the methodology and headline numbers are in [`TECHNICAL_REPORT.md`](TECHNICAL_REPORT.md) and on OSF. Running the pipelines below regenerates the outputs from source PDFs (not distributed here).
 
 ## What's here
 | folder | contents |
@@ -54,5 +39,5 @@ regenerates the outputs from source PDFs (not distributed here).
 ## Notes
 - Models — Phase 1: `gemini-2.0-flash`. Phase 2: `gemini-2.5-flash` + `gpt-5.4-mini`
   (coders) + `claude-haiku-4.5` (adjudicator); OCR `gemini-2.5-flash-lite`.
-- API keys live in a local `.env` (not committed). No secrets in this repo.
+- API keys live in a local `.env` (not committed).
 - Extracted-item data and pipeline outputs are not included — see **Data availability** above.
