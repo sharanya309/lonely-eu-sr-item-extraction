@@ -1,0 +1,15 @@
+# secrets / env
+.env
+*.env
+**/.env
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+# OS
+.DS_Store
+# large raw data (kept gzipped; do not commit uncompressed)
+**/master_flat.csv
+# large regenerable intermediates (kept gzipped; do not commit uncompressed)
+**/01_new_items.csv

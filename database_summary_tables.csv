@@ -1,0 +1,6 @@
+metric,Phase 1,Phase 2,Combined (distinct)
+articles run,4315,3892,6603
+articles with items,2581,2757,5308
+"articles run, no items",1734,1135,1295
+scales (distinct),4189,5984,10147
+items,50072,53600,103672
