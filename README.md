@@ -4,19 +4,17 @@
 
 This repository documents the **item-extraction** work carried out under the systematic review of social connection inventories project of LONELY-EU, a Horizon Europe project. Following a pre-registered search protocol, we screened roughly 80,000 records in ten languages and extracted measurement instruments from the included full-text articles using a reproducible, dual-model AI pipeline with source verification and human validation. For every instrument we captured item wording, response formats, subscales, use of validated instruments, and study/population metadata, then cleaned, de-duplicated, and organised the results into a single searchable item database — supporting data discovery, systematic assessment of measurement heterogeneity and cross-dataset comparability, and identification of substantive and geographic gaps in loneliness measurement.
 
-**Read [`TECHNICAL_REPORT.md`](TECHNICAL_REPORT.md) first** — it is the authoritative
-write-up with all defensible numbers.
+**Read [`TECHNICAL_REPORT.md`](TECHNICAL_REPORT.md)**
 
 ## Links
 - **Technical report / methodology (OSF):** https://osf.io/preprints/psyarxiv/6ueyd_v1
 - **Systematic review pre-registration:** https://osf.io/preprints/psyarxiv/6ueyd_v1
-- **Interactive explorer** (browse & filter instruments and items): https://absl.shinyapps.io/lonely-eu-explorer/
+- **Interactive explorer** (browse & filter instruments and items): [https://absl.shinyapps.io/lonely-eu-explorer/](https://lonelinessineurope.eu/lonely-eu-item-explorer)
 
-Part of the systematic review of social connection inventories (Paris et al., registered
-report), which will inform the EU Social Isolation & Loneliness (SIL) Index.
+Part of the systematic review of social connection inventories (Paris et al., registered report), which will inform the EU Social Isolation & Loneliness (SIL) Index.
 
 ## Data availability
-This repository ships the **code and documentation only** — the extracted questionnaire items and intermediate/output data files are **not** included. The full, searchable item database is publicly available through the interactive explorer (https://absl.shinyapps.io/lonely-eu-explorer/), and the methodology and headline numbers are in [`TECHNICAL_REPORT.md`](TECHNICAL_REPORT.md) and on OSF. Running the pipelines below regenerates the outputs from source PDFs (not distributed here).
+This repository ships the **code and documentation only** — the extracted questionnaire items and intermediate/output data files are **not** included. The full, searchable item database is publicly available through the interactive explorer ([https://absl.shinyapps.io/lonely-eu-explorer/](https://lonelinessineurope.eu/lonely-eu-item-explorer)), and the methodology and headline numbers are reported in [`TECHNICAL_REPORT.md`](TECHNICAL_REPORT.md) and on OSF. Running the pipelines below regenerates the outputs from source PDFs (not distributed here).
 
 ## What's here
 | folder | contents |
