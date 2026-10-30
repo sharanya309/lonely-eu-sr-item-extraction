@@ -29,7 +29,7 @@ from common import (CODERS, FINAL, MODEL_ID, RATE, banner, load_env, log_event,
                     sub_papers, trim_md)
 
 ROOT = Path(__file__).resolve().parent
-ADJ_PROMPT = (ROOT / "prompts" / "adjudicate.md").read_text(encoding="utf-8").strip()
+ADJ_PROMPT = (ROOT.parent / "02_prompts" / "adjudicate.md").read_text(encoding="utf-8").strip()
 AUTO = FINAL / "auto"
 ADJ = FINAL / "adjudicated"
 JOB = FINAL / "adjudicate_job.json"

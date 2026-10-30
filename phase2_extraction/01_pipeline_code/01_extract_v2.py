@@ -33,7 +33,7 @@ shows "done", `retrieve` writes its results. Most batches finish well under an
 hour (24h max). Everything is resumable — a paper already saved is never
 re-fetched, and re-running submit won't resubmit an in-flight job.
 
-Coder A = Gemini (MODEL_ID["gemini"]),  Coder B = OpenAI gpt-5.4 (reasoning model:
+Coder A = Gemini (MODEL_ID["gemini"]),  Coder B = OpenAI gpt-5.4-mini (reasoning model:
 sent with reasoning_effort + max_completion_tokens, never temperature).
 The two coders extract independently; disagreements are resolved by the judge
 (step 03), which reads the paper and BOTH outputs and records the correct values.
@@ -54,7 +54,7 @@ from common import (CODERS, MODEL_ID, N_FULL, RATE, banner, load_env, log_event,
                     merge_usage, need, read_log, sub_papers, trim_md)
 
 ROOT = Path(__file__).resolve().parent
-PROMPT = (ROOT / "prompts" / "extract.md").read_text(encoding="utf-8").strip()
+PROMPT = (ROOT.parent / "02_prompts" / "extract.md").read_text(encoding="utf-8").strip()
 
 # v2 DECISION: give up on a (coder, paper) after this many submissions with no result.
 MAX_ATTEMPTS = 2

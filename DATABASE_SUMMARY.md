@@ -1,7 +1,8 @@
 # Database summary — LOCKED totals
 
-*The full LONELY-EU item database across both phases. Reproduces from
-`CLAUDE_WORKSPACE/FINAL_COUNT/database_totals.py`.*
+*The full LONELY-EU item database across both phases. Scale and item totals reproduce from
+[`database_totals.py`](database_totals.py), which writes `database_summary_tables.csv`; the input
+data are not distributed in this repository.*
 
 ## LOCKED TOTALS
 | | total |
@@ -14,12 +15,21 @@ All 6,011 articles run from the 8.8k masterlist map to these scales and items.
 Articles with no scales, and scales with no items, are included in the counts; the **item
 count is exact** (item-bearing rows). Of the 17,457 scales, 10,147 have ≥1 item.
 
+**How things are counted**
+- **Articles (6,011)** = unique masterlist papers matched as run. The processed PDF files number
+  **6,603** (5,308 with ≥1 item): a paper can exist as more than one PDF, and ~13 were off-topic
+  files outside the masterlist. This is why `database_summary_tables.csv` shows 6,603.
+- **Scales** = distinct article × folded scale-name pairs, keyed on PDF filename.
+- **Scale and item totals** are computed over all 6,603 processed PDFs.
+
 ## By phase
 | phase | scales | items |
 |---|---:|---:|
 | **Phase 1** — 32,444 coded → remapped to unique scales + all items | 4,189 | 50,072 |
 | **Phase 2** — `master_flat`; 45,598 items sent for coding → remap back | 13,295 | 53,600 |
 | **Combined** | **17,457** | **103,672** |
+
+Combined scales = 4,189 + 13,295 − 27 appearing in both phases (re-run articles). Items are summed.
 
 ## Masterlist coverage
 | | articles |

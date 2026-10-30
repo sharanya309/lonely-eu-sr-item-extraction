@@ -2,7 +2,7 @@
 """
 run_append_v2.py — EXACT COPY of run_append.py, except it drives the _v2 stage
 scripts (00_ocr_v2.py, 01_extract_v2.py) so the two v2 policies apply:
-  * OCR excludes PDFs > 70 pages   (00_ocr_v2.py)
+  * OCR excludes PDFs > 120 pages  (00_ocr_v2.py)
   * extraction gives up on a paper after 2 failed attempts, so auto never hangs
     on the ~3 perma-failing Gemini papers  (01_extract_v2.py)
 Everything else (02_agreement.py, 03_adjudicate.py, the append logic) is identical
@@ -12,7 +12,7 @@ Unattended: process every REMAINING pdf and APPEND the new papers
 to the existing data/final/master_flat.csv WITHOUT touching a single existing row.
 
 What it does, in one command:
-    1. 00_ocr_v2.py auto     OCR all remaining PDFs (skips done/bad + >70pg)   [v2]
+    1. 00_ocr_v2.py auto     OCR all remaining PDFs (skips done/bad + >120pg)  [v2]
     2. 01_extract_v2.py auto both coders extract; skip after 2 failed tries     [v2]
     3. 02_agreement.py       IRR + route disputes to the judge                 [existing]
     4. 03_adjudicate submit -> poll -> retrieve   judge the disputes           [existing]
@@ -29,8 +29,8 @@ Guarantees for master_flat.csv:
       (idempotent — it will just say "nothing new to append").
 
 Usage:
-    python3 run_append.py            # full remaining pipeline, then append
-    python3 run_append.py append     # ONLY the append step (if 00-03 already ran)
+    python3 run_append_v2.py         # full remaining pipeline, then append
+    python3 run_append_v2.py append  # ONLY the append step (if 00-03 already ran)
 
 Note: only master_flat.csv (+ its per-paper records/) is appended. The companion
 tables samples.csv / scales.csv / items.csv are NOT updated here — run 04_export.py
@@ -72,7 +72,7 @@ def run(*cmd):
 
 # ---------------------------------------------------------------- stages 00-03
 def stages_00_to_03(poll=60):
-    run("00_ocr_v2.py", "auto")         # all remaining PDFs (v2: skips >70-page files)
+    run("00_ocr_v2.py", "auto")         # all remaining PDFs (v2: skips >120-page files)
     run("01_extract_v2.py", "auto")     # both coders (v2: give up after 2 failed tries)
     run("02_agreement.py")              # local, instant
 

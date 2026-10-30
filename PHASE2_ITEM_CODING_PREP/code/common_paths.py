@@ -4,8 +4,10 @@ Keep normalization identical everywhere so scale/item matching is consistent and
 fully reversible."""
 import os, re, unicodedata
 
-BASE = "/Users/sharanyamosalakanti/Documents/SysReview"
-PREP = os.path.join(BASE, "CLAUDE_WORKSPACE/PHASE2_ITEM_CODING_PREP")
+# BASE = folder holding the (non-distributed) input data; set LONELY_EU_BASE to point at it.
+BASE = os.environ.get("LONELY_EU_BASE", ".")
+# Resolve relative to this file, so the prep folder can live anywhere.
+PREP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT  = os.path.join(PREP, "output")
 
 # Phase-2 raw extraction (the new corpus to prepare for coding)

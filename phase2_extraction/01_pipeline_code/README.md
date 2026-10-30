@@ -1,12 +1,12 @@
 # Extraction pipeline — clean, run in order
 
-Five steps. Run them one at a time in the terminal; each tells you the next.
-No Batch API, no queues, no job-ids — every step is synchronous and
-**resumable**, so an interruption or a re-run never bills you twice.
+Run the steps one at a time in the terminal; each tells you the next. Model calls
+go through provider Batch APIs, and every step is **resumable**, so an interruption
+or a re-run never bills you twice.
 
 ```bash
 cd this-folder
-source .venv/bin/activate        # your existing venv (has google-genai, openai, anthropic, openpyxl)
+source .venv/bin/activate        # see SETUP.md (google-genai, openai, anthropic)
 ```
 
 ## The steps
@@ -16,13 +16,14 @@ Everything that calls a model is **BATCH ONLY** (50% cheaper). Batch is async:
 
 | # | command | what it does |
 |---|---------|--------------|
-| 00a | `python3 00_ocr.py submit --src <pdf-folder> --n 200` → `status` → `retrieve` | PDFs → markdown via Mistral batch OCR, **tables inlined** |
+| 00a | `python3 00_ocr.py submit --src <pdf-folder> --n 200` → `status` → `retrieve` | PDFs → markdown via Gemini (`gemini-2.5-flash-lite`) batch OCR, **tables inlined** |
 | 0 | `python3 00_subsample.py --n 100` | pick a reproducible pilot (skip for the full corpus) |
 | 1 | `python3 01_extract.py submit` → `status` → `retrieve` | two coders (Gemini + OpenAI) extract, batch |
 | 2 | `python3 02_agreement.py` | inter-rater κ; verify+union items; auto-accept agreers; route disputes — scalar AND scale/item — to the judge (local, instant) |
 | 3 | `python3 03_adjudicate.py submit` → `status` → `retrieve` | Claude judges the disagreeing papers: resolves scalars **and** scales/subscales/items (items it returns are re-verified against the source) |
-| 4 | `python3 04_export.py` | master/samples/scales/items CSVs + `extraction_full.xlsx` (local) |
+| 4 | `python3 04_export.py` | master/samples/scales/items CSVs (local) |
 | 5 | `python3 05_costs.py` | cost ledger for reporting (local) |
+| 6 | `python3 06_model_agreement.py` | each model scored against the final record (local) |
 | 7 | `python3 07_verify.py` | independent audit: every paper has exactly one record, master_flat matches the records exactly, no auto/adjudicated overlap, no duplicate items (local, free) — run after every 04_export |
 
 Typical loop per model stage:
@@ -54,8 +55,8 @@ If that looks right, re-sample `--n 100` and run the full thing.
 - `data/final/disagreements.csv` — which papers/fields disagreed
 - `data/final/auto/<pid>.json` — finalized records where coders agreed (free)
 - `data/final/adjudicated/<pid>.json` — judge's final records for disagreements
-- `data/final/records/`, `master_wide.csv`, `samples.csv`, `scales.csv`,
-  `items.csv`, `extraction_full.xlsx` — the export
+- `data/final/records/`, `master_flat.csv`, `samples.csv`, `scales.csv`,
+  `items.csv` — the export
 
 ## How items are handled (the disagreement fix)
 
@@ -93,11 +94,8 @@ while keeping appendices (where items live). Nothing else re-reads the files.
 
 - Everything is **resumable**: `01` and `03` skip papers already done, so re-runs
   are free. Interrupt with Ctrl-C anytime.
-- Rates in `common.py:RATE` are **synchronous list prices**. Run `05_costs.py`
-  after the pilot for a real projection to 3000.
-- Want to roughly **halve** extraction cost? Extraction can be moved to the
-  Batch API later — ask and I'll add a `--batch` path. (Kept synchronous here
-  because that async job-management was the original bug source.)
+- Rates in `common.py:RATE` are **batch prices**. Run `05_costs.py` after the pilot
+  for a real projection.
 
 ## Tuning (one place each)
 
@@ -105,12 +103,16 @@ while keeping appendices (where items live). Nothing else re-reads the files.
 - **How strict "agreement" is** (how many papers reach the judge) →
   `02_agreement.py:ROUTE_TOL`. Loosen `total_items_extracted` if you don't want
   every item-count difference adjudicated.
-- **Judge instructions** → `prompts/adjudicate.md`
+- **Judge instructions** → `../02_prompts/adjudicate.md`
 - **Schema / field rules** → `schema.py`
 
-## Old files
+## Appending new papers (how the later runs were done)
 
-Everything from the batch era is in `_deprecated/` — nothing was deleted.
+`run_append.py` runs steps 00–03 unattended, then appends only the new papers to
+`master_flat.csv` without rewriting existing rows (`04_export.py` does a full rebuild).
+`run_append_v2.py` is the same driver using `00_ocr_v2.py` (excludes PDFs over 120
+pages) and `01_extract_v2.py` (gives up on a paper after 2 failed attempts). The
+originals are kept because they produced the earlier runs.
 
 ## To force a clean rebuild
 

@@ -7,7 +7,7 @@ the cleaning/deduplication, and the resulting database. The code for this work i
 in this repository; the resulting item database is available through the interactive
 explorer and OSF (see #4, Data availability).*
 
-Last updated: 2026-08-25.
+Last updated: 2026-10-30.
 
 ---
 
@@ -47,11 +47,13 @@ The initial run processed **4,046 articles**, yielding:
 | scales | **9,726** |
 | raw items | **78,509** |
 
+Articles here and in the funnel below are distinct titles (4,315 distinct PDF files).
+
 ### 1.3 Cleaning & deduplication funnel
-Performed by **`item cleaning.R`** (one canonical R script covering step-1→4 and both
+Performed by **`01_item_cleaning_step1-4_and_dedup.R`** (one canonical R script covering step-1→4 and both
 deduplications; normalization is inline — `tolower(trimws())` + whitespace collapse to
 build `scale_clean` / `item_clean` keys). Input = `merged_all_batches.csv` (produced by
-`parallel_merge_updated.R`, which merges the 9 extraction batches).
+`00_merge_batches.R`, which merges the 9 extraction batches).
 
 | stage | what it does | articles | scales | items |
 |---|---|---:|---:|---:|
@@ -70,7 +72,7 @@ The 32,444 final items were categorised into RSF domains via a separate multi-ag
 pipeline (documented in the project process log; not part of this repository). The coded
 output (`step4_final_with_categories.xlsx`, with an `assigned_category` column) was then
 **remapped back onto the deduplicated items and scales** by
-**`remapping duplicates.R`**: using the step-2a/step-2b mapping files, every exact-match
+**`02_remap_RSF_domains_onto_duplicates.R`**: using the step-2a/step-2b mapping files, every exact-match
 **item duplicate** and **scale duplicate** inherits the RSF domain of its retained
 "queen" item. This recovers all original scales/items with a domain attached wherever an
 exact match exists.
@@ -86,9 +88,10 @@ the same figures as step-2a:
 > *before* it (step-1). Reproduced by the `scales_deduped_all_items` stage output (see §4).
 
 ### 1.5 Articles set aside for re-running
-Articles **removed at step-1 where nothing survived** (fully dropped, not carried forward)
-= **1,596** — the re-run target for Phase 2. Articles that partially survived step-1 are
-already represented in the Phase-1 dataset and are **not** counted here.
+The Phase-1 PDFs **removed at step-1 where nothing survived** (fully dropped, not carried
+forward) number **1,596** — the re-run target for Phase 2. This is a count of PDF files; the
+equivalent drop by distinct title is 4,046 − 2,665 = 1,381 articles. Articles that partially
+survived step-1 are already represented in the Phase-1 dataset and are **not** counted here.
 
 ### 1.6 Phase-1 code (in `phase1_extraction/`)
 | file | role |
@@ -119,7 +122,8 @@ A single-model pass was judged insufficient for peer-review/public deposit. Phas
 - Records where both coders **agree** are accepted directly; **disagreements** on sample
   characteristics, study classification, or the scales/items are routed to the adjudicator,
   whose output passes the same source-verification check.
-- `run_append.py` appends only new papers to `master_flat.csv` without rewriting existing rows.
+- `run_append.py` / `run_append_v2.py` append only new papers to `master_flat.csv` without
+  rewriting existing rows; the later runs used the v2 driver (§2.4).
 
 ### 2.3 Interim audit & correction
 After ~1,300 articles, a Claude-Code audit of the intermediate outputs and export surfaced
@@ -129,12 +133,15 @@ uncaught. Both were fixed **at the code level and applied retroactively to the e
 model outputs — no article was resubmitted, no new extraction performed.** After correction,
 all **1,336** articles to that point were reconciled by exact match → **20,177 item rows
 (17,631 with item text)**, with κ = .68–.76 / ICC ≥ .97 on scalar fields and 71.8% item /
-62.0% scale overlap between coders before adjudication.
+62.0% scale overlap between coders before adjudication. The κ range covers study type, age
+format and gender format; it excludes `quality_flag` (κ = .25 at 95.1% raw agreement,
+PABAK = .93).
 
 ### 2.4 Operational variants (v2)
 Two robustness tweaks were added and used for the later runs (documented in code; originals
 kept intact for reporting):
-- `00_ocr_v2.py` — auto-excludes PDFs **> 120 pages** from OCR (logged, never retried).
+- `00_ocr_v2.py` — auto-excludes PDFs **> 120 pages** from OCR (logged, never retried);
+  148 PDFs (122–992 pages) were excluded.
 - `01_extract_v2.py` — **retry cap** (a paper failing a coder twice is skipped and logged),
   so unattended runs never hang.
 - `run_append_v2.py` — same append logic, driving the v2 stage scripts.
@@ -148,13 +155,25 @@ funnel has **not** yet been applied to it):
 | articles | **3,892** |
 | item rows | **53,600** |
 | scale instances (paper × scale) | 13,296 |
+| — papers finalised by the adjudicator | 3,154 |
+| — papers accepted on coder agreement | 738 |
 | — brand-new this phase (not in Phase-1) | 2,288 |
 | — Phase-1 articles re-run | 1,604 |
 
+Counts are by PDF file. The 13,296 is the pipeline's export count; the 13,295 in §3 is
+counted on a slightly different key (PDF filename × folded scale name). `master_flat.csv` has 61,100 rows in
+all, because scale records with no items are kept; 53,600 of these carry an item.
+
 Of the **1,596** re-run target (§1.5), **1,529** have been re-processed into Phase-2
-`master_flat` (the remaining 67 are the >120-page / errored files the pipeline excludes).
-The 1,604 Phase-1 articles in `master_flat` = those **1,529** plus **75** further Phase-1
-articles that were also present in the re-run PDF pool.
+`master_flat`. The remaining 67 were not: 56 over the page limit, 7 that errored, 3 non-PDF files
+and 1 flagged poor-quality.
+The 1,604 Phase-1 PDFs in `master_flat` = those **1,529** plus **75** further Phase-1
+PDFs that were also present in the re-run PDF pool.
+
+Pre-adjudication reliability on the full set (3,889 papers with both coders): κ = .66–.75 on
+study type, age format and gender format (`quality_flag`: κ = .24 at 95.6% raw agreement,
+PABAK = .93), ICC ≥ .97 on scalar fields, and 70.9% item / 61.4% scale overlap. Source
+verification removed 12,768 items not found in the source text.
 
 *(The `master_flat.csv` data file is not deposited in this repository; the full item
 database is available through the interactive explorer and OSF — see §4, Data availability.)*
@@ -163,8 +182,8 @@ database is available through the interactive explorer and OSF — see §4, Data
 `00_ocr.py`, `01_extract.py`, `02_agreement.py`, `03_adjudicate.py`, `04_export.py`,
 `05_costs.py`, `06_model_agreement.py`, `07_verify.py`, plus shared modules `common.py`,
 `schema.py`, `resolve.py`, and the driver `run_append.py`; v2 variants
-`00_ocr_v2.py` / `01_extract_v2.py` / `run_append_v2.py`; helpers `00_subsample.py`,
-`refresh_tables.py`, `scale_item_delta.py`; `README.md`, `SETUP.md`.
+`00_ocr_v2.py` / `01_extract_v2.py` / `run_append_v2.py`; helper `00_subsample.py`;
+`README.md`, `SETUP.md`.
 Prompts in `02_prompts/`: `extract.md` (coder prompt), `adjudicate.md` (adjudicator prompt).
 
 ---
@@ -180,10 +199,15 @@ The full item database across both phases (see `DATABASE_SUMMARY.md` for the der
 | **Items** | **103,672** |
 
 By phase — Phase 1 (the 32,444 remapped to unique scales + all items): **4,189 scales /
-50,072 items**; Phase 2 (`master_flat`): **13,295 scales / 53,600 items**. Item counts are
-exact (item-bearing rows); scales include scale records with no items (10,147 of the 17,457
-currently have ≥1 item). All 6,011 run articles map to these totals — Phase-1's remapped
-32,444 set plus Phase-2's 45,598 items sent for coding (which remap back after coding).
+50,072 items**; Phase 2 (`master_flat`): **13,295 scales / 53,600 items**; 27 scales appear in
+both phases, so the combined scale total is distinct. Item counts are exact (item-bearing rows);
+scales include scale records with no items (10,147 of the 17,457 currently have ≥1 item). The
+totals cover Phase-1's remapped 32,444 set plus Phase-2's 45,598 items sent for coding (which
+remap back after coding).
+
+Articles are unique masterlist papers. Scale and item totals are computed over all **6,603**
+processed PDF files (5,308 with ≥1 item): a paper can exist as more than one PDF, and ~13 were
+off-topic files outside the masterlist.
 
 **Masterlist coverage:** of the 8,852 unique master articles, **6,011 are done (run)** and
 **2,841 pending** (6,011 + 2,841 = 8,852).
@@ -194,14 +218,15 @@ currently have ≥1 item). All 6,011 run articles map to these totals — Phase-
 - **Data availability:** this repository contains the **code and documentation only**. The
   extracted-item stage files and pipeline outputs (`03_key_outputs/`, `03_output/`, and the
   coding-prep `output/`) are **not** deposited here. The full, searchable item database is
-  public through the interactive explorer (https://absl.shinyapps.io/lonely-eu-explorer/),
+  public through the interactive explorer (https://lonelinessineurope.eu/lonely-eu-item-explorer),
   and the headline totals are in `DATABASE_SUMMARY.md` and on OSF.
 - **Phase-1 funnel** row counts (step1_cleaned / step2a / step2b / step3 / step4 =
   53,864 / 50,072 / 44,928 / 32,444 / 32,444) reproduce by re-running the cleaning code on the
   extraction output.
-- **Scale counts** (3,423 / 3,373 / 2,734) follow the funnel's scale-occurrence definition
-  in `item cleaning.R`; a stricter dedup-group definition yields slightly lower numbers —
-  use the funnel definition for consistency.
+- **Phase-1 funnel scale counts** (9,726 / 3,423 / 3,373 / 2,734 / 2,734) are distinct
+  `scale_name` strings, matched exactly. Normalising names (case/whitespace) gives slightly
+  lower numbers (e.g. 2,720 at step-3). Use the exact-string definition for the funnel; the
+  4,189 in §3 is a different unit (article × scale pairs).
 - **Phase-2** master_flat regenerates from the pipeline code + PDFs (not deposited here).
 - API keys are read from a local `.env` (not included). 
 
@@ -210,7 +235,8 @@ currently have ≥1 item). All 6,011 run articles map to these totals — Phase-
 lonely-eu-sr-item-extraction/         (code + documentation only — no extracted-data outputs)
 ├── TECHNICAL_REPORT.md              ← this file
 ├── DATABASE_SUMMARY.md              ← locked totals (6,011 / 17,457 / 103,672) + derivation
-├── database_summary_tables.csv      ← the totals as a table
+├── database_summary_tables.csv      ← the counts as a table (PDF-file basis)
+├── database_totals.py               ← computes that table
 ├── README.md                        ← navigation
 ├── phase1_extraction/
 │   ├── 01_extraction_code/          Gemini extractor + prompt

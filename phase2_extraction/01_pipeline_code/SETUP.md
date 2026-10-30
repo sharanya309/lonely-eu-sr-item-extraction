@@ -3,14 +3,15 @@
     python3 -m venv .venv
     source .venv/bin/activate
     pip install --upgrade pip
-    pip install google-genai openai anthropic openpyxl mistralai
+    pip install google-genai openai anthropic
+
+`00_ocr_v2.py` also needs `pdfinfo` from poppler (e.g. `brew install poppler`).
 
 Create a .env file (same folder as this README) with:
 
     GEMINI_API_KEY=...
     OPENAI_API_KEY=...
     ANTHROPIC_API_KEY=...
-    MISTRAL_API_KEY=...        # for step 00 OCR
 
 If you already have OCR'd markdown, copy it in and skip step 00:
 

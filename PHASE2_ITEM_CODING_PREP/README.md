@@ -15,7 +15,8 @@ do NOT collapse scales by name — that would drop distinct same-named-scale var
 | 2 | `code/02_make_coding_list.py` | `01_new_items.csv` → **`items_for_coding.csv/.xlsx`** (6 cols) |
 | 3 | `code/03_remap_rsf_after_coding.py` | *(run AFTER coding)* coding output + `item_disposition.csv` → `master_flat_with_rsf.csv` |
 
-`code/common_paths.py` holds paths + the single `norm()` used everywhere.
+`code/common_paths.py` holds paths + the single `norm()` used everywhere. Set `LONELY_EU_BASE` to
+the folder holding the input data (the data are not distributed here).
 
 ## Inputs
 - Phase-2: `pipeline_final_v3 final/data/final/master_flat.csv`
@@ -36,5 +37,5 @@ inherited from its kept twin.
 python3 code/01_dedup_items.py
 python3 code/02_make_coding_list.py
 # ...after Item Coding returns domains for the new items:
-python3 code/03_remap_rsf_after_coding.py --coded <coding_output.csv>
+python3 code/03_remap_rsf_after_coding.py --coded <coding_output.csv> [--phase1 <phase1_coded.xlsx>]
 ```
