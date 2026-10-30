@@ -16,9 +16,9 @@ Everything that calls a model is **BATCH ONLY** (50% cheaper). Batch is async:
 
 | # | command | what it does |
 |---|---------|--------------|
-| 00a | `python3 00_ocr.py submit --src <pdf-folder> --n 200` → `status` → `retrieve` | PDFs → markdown via Gemini (`gemini-2.5-flash-lite`) batch OCR, **tables inlined** |
+| 00a | `python3 00_ocr_v2.py submit --src <pdf-folder> --n 200` → `status` → `retrieve` | PDFs → markdown via Gemini (`gemini-2.5-flash-lite`) batch OCR, **tables inlined** |
 | 0 | `python3 00_subsample.py --n 100` | pick a reproducible pilot (skip for the full corpus) |
-| 1 | `python3 01_extract.py submit` → `status` → `retrieve` | two coders (Gemini + OpenAI) extract, batch |
+| 1 | `python3 01_extract_v2.py submit` → `status` → `retrieve` | two coders (Gemini + OpenAI) extract, batch |
 | 2 | `python3 02_agreement.py` | inter-rater κ; verify+union items; auto-accept agreers; route disputes — scalar AND scale/item — to the judge (local, instant) |
 | 3 | `python3 03_adjudicate.py submit` → `status` → `retrieve` | Claude judges the disagreeing papers: resolves scalars **and** scales/subscales/items (items it returns are re-verified against the source) |
 | 4 | `python3 04_export.py` | master/samples/scales/items CSVs (local) |
@@ -28,9 +28,9 @@ Everything that calls a model is **BATCH ONLY** (50% cheaper). Batch is async:
 
 Typical loop per model stage:
 ```bash
-python3 01_extract.py submit      # send
-python3 01_extract.py status      # check every few min until "done"
-python3 01_extract.py retrieve    # pull results
+python3 01_extract_v2.py submit      # send
+python3 01_extract_v2.py status      # check every few min until "done"
+python3 01_extract_v2.py retrieve    # pull results
 ```
 
 ## Always smoke-test first (a few cents)
@@ -38,9 +38,9 @@ python3 01_extract.py retrieve    # pull results
 Because batch is all-or-nothing per submit, smoke-test by sampling a tiny set first:
 
 ```bash
-python3 00_ocr.py submit --src <pdf-folder> --n 2   # then status -> retrieve; eyeball one .md
+python3 00_ocr_v2.py submit --src <pdf-folder> --n 2   # then status -> retrieve; eyeball one .md
 python3 00_subsample.py --n 3                        # 3-paper pilot
-python3 01_extract.py submit                         # then status -> retrieve
+python3 01_extract_v2.py submit                         # then status -> retrieve
 python3 02_agreement.py
 python3 03_adjudicate.py submit                      # then status -> retrieve
 python3 04_export.py
@@ -86,7 +86,7 @@ robustness analyses.
 
 ## Reading the local markdowns efficiently
 
-`01_extract.py` calls `trim_md()` (in `common.py`), which drops the
+`01_extract_v2.py` calls `trim_md()` (in `common.py`), which drops the
 references/bibliography before sending — saving ~10–20% input tokens per paper
 while keeping appendices (where items live). Nothing else re-reads the files.
 
@@ -108,11 +108,20 @@ while keeping appendices (where items live). Nothing else re-reads the files.
 
 ## Appending new papers (how the later runs were done)
 
-`run_append.py` runs steps 00–03 unattended, then appends only the new papers to
+`run_append_v2.py` runs steps 00–03 unattended, then appends only the new papers to
 `master_flat.csv` without rewriting existing rows (`04_export.py` does a full rebuild).
-`run_append_v2.py` is the same driver using `00_ocr_v2.py` (excludes PDFs over 120
-pages) and `01_extract_v2.py` (gives up on a paper after 2 failed attempts). The
-originals are kept because they produced the earlier runs.
+
+## The two rules (why the scripts are called `_v2`)
+
+Repeated failures while processing the remaining papers led us to add two rules, used
+for the final 253 papers:
+
+1. **Page limit** (`00_ocr_v2.py`): PDFs over 120 pages are excluded from OCR and logged.
+2. **Retry cap** (`01_extract_v2.py`): a paper is skipped and logged after 2 failed attempts.
+
+These are the only additions; the rest of the pipeline is unchanged. The first 3,639
+papers ran without these rules and were not re-filtered afterwards (see
+`TECHNICAL_REPORT.md`, §2.4).
 
 ## To force a clean rebuild
 

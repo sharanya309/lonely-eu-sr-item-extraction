@@ -3,7 +3,7 @@
     python3 -m venv .venv
     source .venv/bin/activate
     pip install --upgrade pip
-    pip install google-genai openai anthropic
+    pip install -r requirements.txt
 
 `00_ocr_v2.py` also needs `pdfinfo` from poppler (e.g. `brew install poppler`).
 

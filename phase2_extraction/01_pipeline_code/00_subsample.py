@@ -7,7 +7,7 @@ data/markdown; only writes data/subsample.csv.
     python3 00_subsample.py --n 80     # a different size
 
 Sampling 100 of your ~200 markdowns. To run the WHOLE corpus instead, skip
-this step — 01_extract.py falls back to all "ok" papers when no subsample
+this step — 01_extract_v2.py falls back to all "ok" papers when no subsample
 exists.
 
 Triage on the markdown itself:
@@ -75,7 +75,7 @@ def main():
     print(f"  tokens (est)      : {tok:,}  median/paper "
           f"{statistics.median(r['token_est'] for r in pick):,.0f}")
     print(f"  written           : {SUBSAMPLE}")
-    print(f"\n  Next: python3 01_extract.py\n")
+    print(f"\n  Next: python3 01_extract_v2.py\n")
 
 
 if __name__ == "__main__":

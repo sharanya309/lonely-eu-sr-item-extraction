@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 =============================================================================
- 01_extract_v2.py  —  EXACT COPY of 01_extract.py + ONE logged policy change.
- (originals are kept unmodified for reporting the previous runs.)
+ 01_extract_v2.py  —  extraction step, with one policy added for the final papers.
+ (the first 3,639 papers ran without it; see TECHNICAL_REPORT.md, section 2.4.)
 
  v2 DECISION (2026-08-23): RETRY CAP so `auto` never gets stuck.
    In the original, a paper that always fails a coder (e.g. the ~3 Gemini
@@ -21,12 +21,12 @@
 
 STEP 01 — extract, BATCH ONLY.
 
-    python3 01_extract.py auto      [gemini|openai|both]   # Unattended: loops
+    python3 01_extract_v2.py auto      [gemini|openai|both]   # Unattended: loops
                                                             # submit->poll->retrieve over
                                                             # every chunk.
-    python3 01_extract.py submit    [gemini|openai|both]   # send one batch (manual)
-    python3 01_extract.py status                            # poll progress
-    python3 01_extract.py retrieve  [gemini|openai|both]    # pull results (manual)
+    python3 01_extract_v2.py submit    [gemini|openai|both]   # send one batch (manual)
+    python3 01_extract_v2.py status                            # poll progress
+    python3 01_extract_v2.py retrieve  [gemini|openai|both]    # pull results (manual)
 
 Batch is asynchronous: submit, `status`; when a coder
 shows "done", `retrieve` writes its results. Most batches finish well under an
@@ -216,7 +216,7 @@ def submit(coder):
     print(f"  [{coder}] {MODEL_ID[coder]} | submitting {len(ins)} papers{tail}")
     jid = _submit_gemini(jl) if coder == "gemini" else _submit_openai(jl)
     jsave(coder, {"job_id": jid, "n": len(ins)})
-    print(f"  [{coder}] submitted: {jid}\n  Next: python3 01_extract.py status")
+    print(f"  [{coder}] submitted: {jid}\n  Next: python3 01_extract_v2.py status")
     log_event("01_extract", f"submit {coder} {MODEL_ID[coder]} n={len(ins)} "
                             f"queued={remaining} job={jid}")
 
@@ -303,7 +303,7 @@ def status():
             r = _reason(c)
             print(f"           reason: {r}")
             log_event("01_extract", f"{c} BATCH FAILED: {r}")
-    print("\n  When a coder is 'done': python3 01_extract.py retrieve\n")
+    print("\n  When a coder is 'done': python3 01_extract_v2.py retrieve\n")
 
 
 # --------------------------------------------------------------- retrieve
@@ -433,7 +433,7 @@ def cancel(coder):
             genai.Client(api_key=need("GEMINI_API_KEY", "GOOGLE_API_KEY")).batches.cancel(name=jid)
         print(f"  [{coder}] cancel requested for {jid}.")
         print(f"  [{coder}] billed ONLY for completed requests. Wait ~1 min, then:")
-        print(f"  [{coder}]   python3 01_extract.py retrieve {coder}   (saves whatever finished)")
+        print(f"  [{coder}]   python3 01_extract_v2.py retrieve {coder}   (saves whatever finished)")
         log_event("01_extract", f"cancel {coder} job={jid}")
     except Exception as e:
         print(f"  [{coder}] cancel failed: {str(e)[:160]}")

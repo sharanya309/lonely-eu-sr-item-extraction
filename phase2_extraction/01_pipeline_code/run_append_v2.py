@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-run_append_v2.py — EXACT COPY of run_append.py, except it drives the _v2 stage
-scripts (00_ocr_v2.py, 01_extract_v2.py) so the two v2 policies apply:
+run_append_v2.py — append driver for the _v2 stage scripts (00_ocr_v2.py,
+01_extract_v2.py), so the two v2 policies apply:
   * OCR excludes PDFs > 120 pages  (00_ocr_v2.py)
   * extraction gives up on a paper after 2 failed attempts, so auto never hangs
     on the ~3 perma-failing Gemini papers  (01_extract_v2.py)
-Everything else (02_agreement.py, 03_adjudicate.py, the append logic) is identical
-to run_append.py, and the originals are left untouched for reporting.
+Everything else (02_agreement.py, 03_adjudicate.py, the append logic) is unchanged.
 
 Unattended: process every REMAINING pdf and APPEND the new papers
 to the existing data/final/master_flat.csv WITHOUT touching a single existing row.

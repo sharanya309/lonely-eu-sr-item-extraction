@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 =============================================================================
- 00_ocr_v2.py  —  EXACT COPY of 00_ocr.py + ONE logged policy change.
- (originals are kept unmodified for reporting the previous runs.)
+ 00_ocr_v2.py  —  OCR step, with one policy added for the final papers.
+ (the first 3,639 papers ran without it; see TECHNICAL_REPORT.md, section 2.4.)
 
  v2 DECISION (2026-08-23): PAGE-LIMIT EXCLUSION.
    PDFs with more than MAX_PAGES (=120) pages are AUTOMATICALLY excluded from
@@ -20,14 +20,14 @@ STEP 00 — OCR via Gemini (gemini-2.5-flash-lite), BATCH. Native PDF vision:
 one call per PDF transcribes body text, tables (as markdown), AND text inside
 figures / charts / scanned images — no separate image handling needed.
 
-    python3 00_ocr.py auto   --src data/pdfs --n 200   # Unattended: OCR 200 good papers.
+    python3 00_ocr_v2.py auto   --src data/pdfs --n 200   # Unattended: OCR 200 good papers.
                                                         # Non-PDF/unreadable files are
                                                         # logged to bad_source_files.csv,
                                                         # skipped, and it keeps pulling
                                                         # more PDFs to reach 200.
-    python3 00_ocr.py submit --src data/pdfs --n 200   # one batch (manual)
-    python3 00_ocr.py status
-    python3 00_ocr.py retrieve
+    python3 00_ocr_v2.py submit --src data/pdfs --n 200   # one batch (manual)
+    python3 00_ocr_v2.py status
+    python3 00_ocr_v2.py retrieve
 
 Each PDF is base64'd inline into a JSONL, uploaded, and run as one Gemini batch.
 Resumable: PDFs that already have a data/markdown/<stem>.md are skipped, and the
@@ -214,7 +214,7 @@ def submit(src, n):
     jid = c.batches.create(model=MODEL_ID["ocr"], src=up.name,
                            config={"display_name": "ocr"}).name
     JOB.write_text(json.dumps({"job_id": jid, "map": idx}, indent=2))
-    print(f"  submitted: {jid}\n  Next: python3 00_ocr.py status")
+    print(f"  submitted: {jid}\n  Next: python3 00_ocr_v2.py status")
     log_event("00_ocr", f"submit {MODEL_ID['ocr']} n={len(idx)} queued={remaining} job={jid}")
     return list(idx.keys())
 
@@ -235,7 +235,7 @@ def status():
     st = _state(c, j["job_id"])
     done = len(list(MD_DIR.glob("*.md"))) if MD_DIR.exists() else 0
     print(f"  batch {j['job_id']}: {st} | markdowns on disk: {done}")
-    print("\n  When 'done': python3 00_ocr.py retrieve\n")
+    print("\n  When 'done': python3 00_ocr_v2.py retrieve\n")
 
 
 # --------------------------------------------------------------- retrieve
@@ -329,7 +329,7 @@ def auto(src, n, poll=60):
     nbad = sum(1 for _ in csv.DictReader(open(BAD_CSV, encoding="utf-8"))) if BAD_CSV.exists() else 0
     tail = f" (target {n})" if n else ""
     print(f"\n  Done. OCR: {got} new papers OCR'd{tail}. Bad files logged: {nbad} "
-          f"-> {BAD_CSV.name}. Next: python3 01_extract.py auto\n")
+          f"-> {BAD_CSV.name}. Next: python3 01_extract_v2.py auto\n")
 
 
 def main():

@@ -122,8 +122,8 @@ A single-model pass was judged insufficient for peer-review/public deposit. Phas
 - Records where both coders **agree** are accepted directly; **disagreements** on sample
   characteristics, study classification, or the scales/items are routed to the adjudicator,
   whose output passes the same source-verification check.
-- `run_append.py` / `run_append_v2.py` append only new papers to `master_flat.csv` without
-  rewriting existing rows; the later runs used the v2 driver (§2.4).
+- `run_append_v2.py` appends only new papers to `master_flat.csv` without
+  rewriting existing rows.
 
 ### 2.3 Interim audit & correction
 After ~1,300 articles, a Claude-Code audit of the intermediate outputs and export surfaced
@@ -137,14 +137,26 @@ all **1,336** articles to that point were reconciled by exact match → **20,177
 format and gender format; it excludes `quality_flag` (κ = .25 at 95.1% raw agreement,
 PABAK = .93).
 
-### 2.4 Operational variants (v2)
-Two robustness tweaks were added and used for the later runs (documented in code; originals
-kept intact for reporting):
-- `00_ocr_v2.py` — auto-excludes PDFs **> 120 pages** from OCR (logged, never retried);
-  148 PDFs (122–992 pages) were excluded.
-- `01_extract_v2.py` — **retry cap** (a paper failing a coder twice is skipped and logged),
-  so unattended runs never hang.
-- `run_append_v2.py` — same append logic, driving the v2 stage scripts.
+### 2.4 Two rules added for the final papers (v2)
+The first 3,639 papers ran without these rules. Repeated failures while processing the
+remaining papers led us to add two rules, used for the final **253** papers. These are the
+only additions; the rest of the pipeline is unchanged.
+- **Page limit** (`00_ocr_v2.py`) — PDFs **> 120 pages** are excluded from OCR (logged, never
+  retried); these are mostly long theses and books. 148 PDFs (122–992 pages) were excluded.
+- **Retry cap** (`01_extract_v2.py`) — a paper failing a coder twice is skipped and logged, so
+  unattended runs cannot hang. The cap itself was never reached: the three papers behind it
+  (below) had already been set aside by hand.
+
+Three long theses repeatedly failed Gemini extraction (output token limit) and were set aside
+before the retry cap was added. They remain in the dataset, coded by the OpenAI coder and the
+adjudicator only (4 item rows in total), which is why reliability in §2.5 is on 3,889 papers
+rather than 3,892.
+
+`run_append_v2.py` is the append driver for these scripts. The rules applied going forward only:
+earlier papers were not re-filtered, so `master_flat` still includes **100** PDFs over 120 pages,
+all processed before the limit existed. Only the v2 scripts are kept here; the pre-rule
+versions differ only by these two rules and remain in the
+[repository history](https://github.com/sharanya309/lonely-eu-sr-item-extraction/tree/59959e1/phase2_extraction/01_pipeline_code).
 
 ### 2.5 Current Phase-2 output (`master_flat.csv`)
 As of this report, the Phase-2 `master_flat.csv` (raw, pre-cleaning — the Phase-1 cleaning
@@ -179,11 +191,10 @@ verification removed 12,768 items not found in the source text.
 database is available through the interactive explorer and OSF — see §4, Data availability.)*
 
 ### 2.6 Phase-2 code (in `phase2_extraction/01_pipeline_code/`)
-`00_ocr.py`, `01_extract.py`, `02_agreement.py`, `03_adjudicate.py`, `04_export.py`,
+`00_ocr_v2.py`, `01_extract_v2.py`, `02_agreement.py`, `03_adjudicate.py`, `04_export.py`,
 `05_costs.py`, `06_model_agreement.py`, `07_verify.py`, plus shared modules `common.py`,
-`schema.py`, `resolve.py`, and the driver `run_append.py`; v2 variants
-`00_ocr_v2.py` / `01_extract_v2.py` / `run_append_v2.py`; helper `00_subsample.py`;
-`README.md`, `SETUP.md`.
+`schema.py`, `resolve.py`, and the driver `run_append_v2.py`; helper `00_subsample.py`;
+`README.md`, `SETUP.md`, `requirements.txt`.
 Prompts in `02_prompts/`: `extract.md` (coder prompt), `adjudicate.md` (adjudicator prompt).
 
 ---
@@ -242,7 +253,7 @@ lonely-eu-sr-item-extraction/         (code + documentation only — no extracte
 │   ├── 01_extraction_code/          Gemini extractor + prompt
 │   └── 02_cleaning_and_dedup_code/  merge → step1-4 clean/dedup → RSF remap (R)
 ├── phase2_extraction/
-│   ├── 01_pipeline_code/            dual-coder + adjudicator pipeline (+ v2)
+│   ├── 01_pipeline_code/            dual-coder + adjudicator pipeline
 │   └── 02_prompts/                  extract.md, adjudicate.md
 └── PHASE2_ITEM_CODING_PREP/
     └── code/                        Phase-2 → item-coding prep + RSF remap
